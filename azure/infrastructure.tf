@@ -111,6 +111,8 @@ module "bastion" {
   source              = "./modules/bastion"
   network_topology    = var.network_topology
   common_variables    = module.common_variables.configuration
+  name                = var.bastion_name
+  network_domain      = var.bastion_network_domain == "" ? var.network_domain : var.bastion_network_domain
   az_region           = var.az_region
   os_image            = local.bastion_os_image
   vm_size             = "Standard_B1s"

@@ -75,11 +75,12 @@ resource "azurerm_network_interface" "bastion" {
     subnet_id                     = var.snet_id == "" ? azurerm_subnet.bastion[0].id : var.snet_id
     private_ip_address_allocation = "static"
     private_ip_address            = local.private_ip_address
-    public_ip_address_id          = !var.fortinet_enabled ? azurerm_public_ip.bastion[0].id : var.fortinet_bastion_public_ip_id
+    public_ip_address_id          = !var.fortinet_enabled ? azurerm_public_ip.bastion[0].id : ""
   }
 
   tags = {
     workspace = var.common_variables["deployment_name"]
+    role      = "bastion"
   }
 }
 
@@ -93,6 +94,7 @@ resource "azurerm_public_ip" "bastion" {
 
   tags = {
     workspace = var.common_variables["deployment_name"]
+    role      = "bastion"
   }
 }
 
@@ -156,6 +158,7 @@ module "bastion_on_destroy" {
   instance_ids = azurerm_virtual_machine.bastion.*.id
   user         = var.common_variables["authorized_user"]
   private_key  = var.common_variables["bastion_private_key"]
-  public_ips   = data.azurerm_public_ip.bastion.*.ip_address
+  public_ips   = !var.fortinet_enabled ? data.azurerm_public_ip.bastion.*.ip_address : [var.fortinet_bastion_public_ip]
+
   dependencies = [data.azurerm_public_ip.bastion]
 }

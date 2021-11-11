@@ -10,10 +10,12 @@ resource "null_resource" "bastion_provisioner" {
   }
 
   connection {
-    host        = element(data.azurerm_public_ip.bastion.*.ip_address, count.index)
+    host        = !var.fortinet_enabled ? element(data.azurerm_public_ip.bastion.*.ip_address, count.index) : var.fortinet_bastion_public_ip
     type        = "ssh"
     user        = var.common_variables["authorized_user"]
     private_key = var.common_variables["bastion_private_key"]
+    # on fortinet, a default timeout of 5m is not enough to bootstrap everything
+    timeout     = "60m"
   }
 
   provisioner "file" {
@@ -34,7 +36,7 @@ module "bastion_provision" {
   instance_ids = null_resource.bastion_provisioner.*.id
   user         = var.common_variables["authorized_user"]
   private_key  = var.common_variables["bastion_private_key"]
-  public_ips   = data.azurerm_public_ip.bastion.*.ip_address
+  public_ips   = !var.fortinet_enabled ? data.azurerm_public_ip.bastion.*.ip_address : [var.fortinet_bastion_public_ip]
   background   = var.common_variables["background"]
   reboot       = false
 }

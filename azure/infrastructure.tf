@@ -26,8 +26,10 @@ locals {
   vnet_address_range = var.vnet_address_range == "" ? (var.network_topology == "hub_spoke" ? module.network_hub.0.vnet_hub_address_range : (var.network_topology == "plain" ? module.network_plain.0.vnet_plain_address_range : "")) : var.vnet_address_range
   # used to generate hosts
   subnet_address_range         = var.subnet_address_range == "" ? (var.network_topology == "hub_spoke" ? module.network_spoke.0.subnet_spoke_workload_address_range : (var.network_topology == "plain" ? module.network_plain.0.subnet_plain_workload_address_range : "")) : var.subnet_address_range
-  subnet_bastion_id            = var.network_topology == "hub_spoke" && var.vnet_hub_create ? module.network_hub.0.subnet_hub_mgmt_id : (var.network_topology == "plain" ? module.network_plain.0.subnet_plain_workload_id : "")
+  subnet_bastion_id            = var.network_topology == "hub_spoke" && var.vnet_hub_create ? module.network_hub.0.subnet_hub_mgmt_id : (var.network_topology == "plain" ? module.bastion.0.subnet_bastion_id : "")
   subnet_bastion_address_range = var.network_topology == "hub_spoke" && var.vnet_hub_create ? module.network_hub.0.subnet_hub_mgmt_address_range : cidrsubnet(local.vnet_address_range, 8, 2)
+  subnet_monitoring_id            = var.network_topology == "hub_spoke" && var.vnet_hub_create ? module.network_hub.0.subnet_hub_mon_id : (var.network_topology == "plain" ? module.network_plain.0.subnet_plain_workload_id : "")
+  subnet_monitoring_address_range = var.network_topology == "hub_spoke" && var.vnet_hub_create ? module.network_hub.0.subnet_hub_mon_address_range : local.subnet_address_range
 
   shared_storage_anf          = (var.hana_scale_out_shared_storage_type == "anf" || var.netweaver_shared_storage_type == "anf") ? 1 : 0
   anf_account_name            = local.shared_storage_anf == 1 ? (var.anf_account_name == "" ? azurerm_netapp_account.mynetapp-acc.0.name : var.anf_account_name) : ""

@@ -16,11 +16,11 @@ module "local_execution" {
 # Netweaver virtual ips: 10.74.0.34, 10.74.0.35, 10.74.0.36, 10.74.0.37
 # If the addresses are provided by the user will always have preference
 locals {
-  bastion_host  = (
+  bastion_host = (
     var.network_topology == "hub_spoke" && var.vnet_hub_create == false
-      # if existing hub_spoke is used, a bastion host IP needs to be passed
-      ? var.bastion_host
-        : module.bastion.0.public_ip
+    # if existing hub_spoke is used, a bastion host IP needs to be passed
+    ? var.bastion_host
+    : module.bastion.0.public_ip
   )
   iscsi_ip      = var.iscsi_srv_ip != "" ? var.iscsi_srv_ip : cidrhost(local.subnet_address_range, 4)
   monitoring_ip = var.monitoring_srv_ip != "" ? var.monitoring_srv_ip : cidrhost(local.subnet_monitoring_address_range, 5)

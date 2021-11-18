@@ -41,9 +41,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["dmz"]
+          subnet_id                     = var.snet_ids["external-fgt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["dmz"], 6)
+          private_ip_address            = cidrhost(var.snet_address_ranges["external-fgt"], 6)
           public_ip_address_id          = null
         }
       ]
@@ -58,9 +58,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["trusted"]
+          subnet_id                     = var.snet_ids["internal-fgt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["trusted"], 6)
+          private_ip_address            = cidrhost(var.snet_address_ranges["internal-fgt"], 6)
           public_ip_address_id          = null
         }
       ]
@@ -75,9 +75,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["hasync"]
+          subnet_id                     = var.snet_ids["hasync-ftnt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["hasync"], 6)
+          private_ip_address            = cidrhost(var.snet_address_ranges["hasync-ftnt"], 6)
           public_ip_address_id          = null
         }
       ]
@@ -92,9 +92,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["fortinet-mgmt"]
+          subnet_id                     = var.snet_ids["mgmt-ftnt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["fortinet-mgmt"], 6)
+          private_ip_address            = cidrhost(var.snet_address_ranges["mgmt-ftnt"], 6)
           public_ip_address_id          = azurerm_public_ip.public_ip["pip-fgt-a"].id
         }
       ]
@@ -109,9 +109,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["dmz"]
+          subnet_id                     = var.snet_ids["external-fgt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["dmz"], 7)
+          private_ip_address            = cidrhost(var.snet_address_ranges["external-fgt"], 7)
           public_ip_address_id          = null
         }
       ]
@@ -126,9 +126,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["trusted"]
+          subnet_id                     = var.snet_ids["internal-fgt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["trusted"], 7)
+          private_ip_address            = cidrhost(var.snet_address_ranges["internal-fgt"], 7)
           public_ip_address_id          = null
         }
       ]
@@ -143,9 +143,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["hasync"]
+          subnet_id                     = var.snet_ids["hasync-ftnt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["hasync"], 7)
+          private_ip_address            = cidrhost(var.snet_address_ranges["hasync-ftnt"], 7)
           public_ip_address_id          = null
         }
       ]
@@ -160,9 +160,9 @@ locals {
       ip_configurations = [
         {
           name                          = "ipconfig1"
-          subnet_id                     = var.snet_ids["fortinet-mgmt"]
+          subnet_id                     = var.snet_ids["mgmt-ftnt"]
           private_ip_address_allocation = "Static"
-          private_ip_address            = cidrhost(var.snet_address_ranges["fortinet-mgmt"], 7)
+          private_ip_address            = cidrhost(var.snet_address_ranges["mgmt-ftnt"], 7)
           public_ip_address_id          = azurerm_public_ip.public_ip["pip-fgt-b"].id
         }
       ]
@@ -189,29 +189,24 @@ locals {
   }
 
   subnet_route_table_associations = {
-    "trusted" = {
-      subnet_id      = var.snet_ids["shared-services"]
+    "external-fadc" = {
+      subnet_id      = var.snet_ids["external-fadc"]
       route_table_id = azurerm_route_table.route_table["rt-protected"].id
     }
   }
   network_security_groups = {
-    "nsg-public" = {
-      name                = "nsg-public"
-      location            = var.az_region
-      resource_group_name = var.resource_group_name
-    },
-    "nsg-private" = {
-      name                = "nsg-private"
+    "nsg-fortigate" = {
+      name                = "nsg-fortigate"
       location            = var.az_region
       resource_group_name = var.resource_group_name
     }
   }
 
   network_security_rules = {
-    "nsg-public-inbound-rule" = {
-      name                        = "nsg-public-inbound-rule"
+    "nsg-fortigate-inbound-rule" = {
+      name                        = "nsg-fortigate-inbound-rule"
       resource_group_name         = var.resource_group_name
-      network_security_group_name = azurerm_network_security_group.network_security_group["nsg-public"].name
+      network_security_group_name = azurerm_network_security_group.network_security_group["nsg-fortigate"].name
       priority                    = "100"
       direction                   = "Inbound"
       access                      = "Allow"
@@ -221,36 +216,10 @@ locals {
       source_address_prefix       = "*"
       destination_address_prefix  = "*"
     },
-    "nsg-private-inbound-rule" = {
-      name                        = "nsg-private-inbound-rule"
+    "nsg-fortigate-outbound-rule" = {
+      name                        = "nsg-fortigate-outbound-rule"
       resource_group_name         = var.resource_group_name
-      network_security_group_name = azurerm_network_security_group.network_security_group["nsg-private"].name
-      priority                    = "100"
-      direction                   = "Inbound"
-      access                      = "Allow"
-      protocol                    = "*"
-      source_port_range           = "*"
-      destination_port_range      = "*"
-      source_address_prefix       = "*"
-      destination_address_prefix  = "*"
-    }
-    "nsg-public-outbound-rule" = {
-      name                        = "nsg-public-outbound-rule"
-      resource_group_name         = var.resource_group_name
-      network_security_group_name = azurerm_network_security_group.network_security_group["nsg-public"].name
-      priority                    = "101"
-      direction                   = "Outbound"
-      access                      = "Allow"
-      protocol                    = "*"
-      source_port_range           = "*"
-      destination_port_range      = "*"
-      source_address_prefix       = "*"
-      destination_address_prefix  = "*"
-    },
-    "nsg-private-outbound-rule" = {
-      name                        = "nsg-private-outbound-rule"
-      resource_group_name         = var.resource_group_name
-      network_security_group_name = azurerm_network_security_group.network_security_group["nsg-private"].name
+      network_security_group_name = azurerm_network_security_group.network_security_group["nsg-fortigate"].name
       priority                    = "101"
       direction                   = "Outbound"
       access                      = "Allow"
@@ -265,35 +234,35 @@ locals {
   network_security_group_associations = {
     "nic-fortigate_a_1" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_a_1"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     },
     "nic-fortigate_a_2" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_a_2"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     },
     "nic-fortigate_a_3" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_a_3"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     },
     "nic-fortigate_a_4" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_a_4"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     },
     "nic-fortigate_b_1" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_b_1"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     },
     "nic-fortigate_b_2" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_b_2"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     },
     "nic-fortigate_b_3" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_b_3"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     },
     "nic-fortigate_b_4" = {
       network_interface_id      = azurerm_network_interface.network_interface["nic-fortigate_b_4"].id
-      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-public"].id
+      network_security_group_id = azurerm_network_security_group.network_security_group["nsg-fortigate"].id
     }
   }
 
@@ -324,8 +293,8 @@ locals {
       frontend_ip_configurations = [
         {
           name                          = "lb-fgt-internal-fe-ip-01"
-          subnet_id                     = var.snet_ids["trusted"]
-          private_ip_address            = cidrhost(var.snet_address_ranges["trusted"], 4)
+          subnet_id                     = var.snet_ids["internal-fgt"]
+          private_ip_address            = cidrhost(var.snet_address_ranges["internal-fgt"], 4)
           private_ip_address_allocation = "Static"
           private_ip_address_version    = "IPv4"
         }
@@ -580,18 +549,18 @@ locals {
       fgt_ha_priority     = "255"
       fgt_admins_port     = "443"
       fgt_license_type    = var.vm_license
-      fgt_port1_ip        = cidrhost(var.snet_address_ranges["dmz"], 6)
-      fgt_port1_mask      = cidrnetmask(var.snet_address_ranges["dmz"])
-      fgt_port1_gateway   = cidrhost(var.snet_address_ranges["dmz"], 1)
-      fgt_port2_ip        = cidrhost(var.snet_address_ranges["trusted"], 6)
-      fgt_port2_mask      = cidrnetmask(var.snet_address_ranges["trusted"])
-      fgt_port2_gateway   = cidrhost(var.snet_address_ranges["trusted"], 1)
-      fgt_port3_ip        = cidrhost(var.snet_address_ranges["hasync"], 6)
-      fgt_port3_peerip    = cidrhost(var.snet_address_ranges["hasync"], 7)
-      fgt_port3_mask      = cidrnetmask(var.snet_address_ranges["hasync"])
-      fgt_port4_ip        = cidrhost(var.snet_address_ranges["fortinet-mgmt"], 6)
-      fgt_port4_mask      = cidrnetmask(var.snet_address_ranges["fortinet-mgmt"])
-      fgt_port4_gateway   = cidrhost(var.snet_address_ranges["fortinet-mgmt"], 1)
+      fgt_port1_ip        = cidrhost(var.snet_address_ranges["external-fgt"], 6)
+      fgt_port1_mask      = cidrnetmask(var.snet_address_ranges["external-fgt"])
+      fgt_port1_gateway   = cidrhost(var.snet_address_ranges["external-fgt"], 1)
+      fgt_port2_ip        = cidrhost(var.snet_address_ranges["internal-fgt"], 6)
+      fgt_port2_mask      = cidrnetmask(var.snet_address_ranges["internal-fgt"])
+      fgt_port2_gateway   = cidrhost(var.snet_address_ranges["internal-fgt"], 1)
+      fgt_port3_ip        = cidrhost(var.snet_address_ranges["hasync-ftnt"], 6)
+      fgt_port3_peerip    = cidrhost(var.snet_address_ranges["hasync-ftnt"], 7)
+      fgt_port3_mask      = cidrnetmask(var.snet_address_ranges["hasync-ftnt"])
+      fgt_port4_ip        = cidrhost(var.snet_address_ranges["mgmt-ftnt"], 6)
+      fgt_port4_mask      = cidrnetmask(var.snet_address_ranges["mgmt-ftnt"])
+      fgt_port4_gateway   = cidrhost(var.snet_address_ranges["mgmt-ftnt"], 1)
       fgt_vnet            = var.vnet_address_range
       bastion_frontend_ip = azurerm_public_ip.public_ip["pip-bastion-lb-fe"].ip_address
       bastion_private_ip  = var.bastion_private_ip
@@ -639,18 +608,18 @@ locals {
       fgt_ha_priority     = "1"
       fgt_admins_port     = "443"
       fgt_license_type    = var.vm_license
-      fgt_port1_ip        = cidrhost(var.snet_address_ranges["dmz"], 7)
-      fgt_port1_mask      = cidrnetmask(var.snet_address_ranges["dmz"])
-      fgt_port1_gateway   = cidrhost(var.snet_address_ranges["dmz"], 1)
-      fgt_port2_ip        = cidrhost(var.snet_address_ranges["trusted"], 7)
-      fgt_port2_mask      = cidrnetmask(var.snet_address_ranges["trusted"])
-      fgt_port2_gateway   = cidrhost(var.snet_address_ranges["trusted"], 1)
-      fgt_port3_ip        = cidrhost(var.snet_address_ranges["hasync"], 7)
-      fgt_port3_peerip    = cidrhost(var.snet_address_ranges["hasync"], 6)
-      fgt_port3_mask      = cidrnetmask(var.snet_address_ranges["hasync"])
-      fgt_port4_ip        = cidrhost(var.snet_address_ranges["fortinet-mgmt"], 7)
-      fgt_port4_mask      = cidrnetmask(var.snet_address_ranges["fortinet-mgmt"])
-      fgt_port4_gateway   = cidrhost(var.snet_address_ranges["fortinet-mgmt"], 1)
+      fgt_port1_ip        = cidrhost(var.snet_address_ranges["external-fgt"], 7)
+      fgt_port1_mask      = cidrnetmask(var.snet_address_ranges["external-fgt"])
+      fgt_port1_gateway   = cidrhost(var.snet_address_ranges["external-fgt"], 1)
+      fgt_port2_ip        = cidrhost(var.snet_address_ranges["internal-fgt"], 7)
+      fgt_port2_mask      = cidrnetmask(var.snet_address_ranges["internal-fgt"])
+      fgt_port2_gateway   = cidrhost(var.snet_address_ranges["internal-fgt"], 1)
+      fgt_port3_ip        = cidrhost(var.snet_address_ranges["hasync-ftnt"], 7)
+      fgt_port3_peerip    = cidrhost(var.snet_address_ranges["hasync-ftnt"], 6)
+      fgt_port3_mask      = cidrnetmask(var.snet_address_ranges["hasync-ftnt"])
+      fgt_port4_ip        = cidrhost(var.snet_address_ranges["mgmt-ftnt"], 7)
+      fgt_port4_mask      = cidrnetmask(var.snet_address_ranges["mgmt-ftnt"])
+      fgt_port4_gateway   = cidrhost(var.snet_address_ranges["mgmt-ftnt"], 1)
       fgt_vnet            = var.vnet_address_range
       bastion_frontend_ip = azurerm_public_ip.public_ip["pip-bastion-lb-fe"].id
       bastion_private_ip  = var.bastion_private_ip
